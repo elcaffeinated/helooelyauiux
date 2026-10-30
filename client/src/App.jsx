@@ -1,36 +1,42 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useReveal, useScroll } from './hooks.js';
 import { PROJECTS, DECK, SERVICES } from './data/projects.js';
+import { SITE } from './data/site.js';
 
 const Arrow = () => <svg aria-hidden="true"><use href="#arr" /></svg>;
 const Label = ({ dot, children, ...r }) => <p className={`label dot-${dot}`} {...r}><i />{children}</p>;
 const NAV = [['home','HOME'],['about','ABOUT'],['services','SERVICES','opt'],['projects','PROJECTS'],['space','SPACE','opt'],['contact','CONTACT']];
 
-/* ---------- Contact form: talks to our own Node API ---------- */
+/* ---------- Contact form ----------
+   Works with a form service (set VITE_FORM_ENDPOINT, e.g. a Formspree URL) so it also works on static hosting.
+   Without it, it falls back to the bundled Node API at /api/contact. */
+const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT || '/api/contact';
 function ContactForm() {
   const [st, setSt] = useState({ kind: '', msg: '' }), [busy, setBusy] = useState(false);
   const submit = async e => {
     e.preventDefault();
     const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    if (data.website) { form.reset(); setSt({ kind: 'ok', msg: 'Thanks! Your message was sent. I’ll get back to you soon.' }); return; } // honeypot: bots fill this
     setBusy(true); setSt({ kind: '', msg: '' });
     try {
-      const res = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      const res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data) });
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j.error || 'Something went wrong.');
+      if (!res.ok) throw new Error(j.error || j.errors?.[0]?.message || 'Something went wrong.');
       form.reset(); setSt({ kind: 'ok', msg: 'Thanks! Your message was sent. I’ll get back to you soon.' });
-    } catch (err) { setSt({ kind: 'err', msg: err.message + ' Please try again or email me directly.' }); }
+    } catch (err) { setSt({ kind: 'err', msg: `${err.message} Please try again or email me at ${SITE.email}.` }); }
     setBusy(false);
   };
   return (
     <form className="form" onSubmit={submit} data-r="left">
       <div className="g2">
-        <label>FIRST NAME<input name="first_name" placeholder="Juan" required autoComplete="given-name" /></label>
-        <label>LAST NAME<input name="last_name" placeholder="Dela Cruz" required autoComplete="family-name" /></label>
-        <label>EMAIL<input type="email" name="email" placeholder="DcruzJuan@gmail.com" required autoComplete="email" /></label>
-        <label>CONTACT NUMBER<input type="tel" name="phone" placeholder="09123456789" autoComplete="tel" /></label>
+        <label>First Name<input name="first_name" placeholder="Juan" required autoComplete="given-name" /></label>
+        <label>Last Name<input name="last_name" placeholder="Dela Cruz" required autoComplete="family-name" /></label>
+        <label>Email<input type="email" name="email" placeholder="DcruzJuan@gmail.com" required autoComplete="email" /></label>
+        <label>Contact Number<input type="tel" name="phone" placeholder="09123456789" autoComplete="tel" /></label>
       </div>
-      <label>MESSAGE<textarea name="message" rows="5" placeholder="Tell me about your idea…" required /></label>
+      <label>Message<textarea name="message" rows="5" placeholder="Tell me about your idea…" required /></label>
       <input type="text" name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} />
       <button className="send" disabled={busy}>{busy ? 'Sending…' : 'Send message'}</button>
       <p className={`status ${st.kind}`} role="status" aria-live="polite">{st.msg}</p>
@@ -40,12 +46,30 @@ function ContactForm() {
 
 /* ---------- Project case-study modal ---------- */
 function Modal({ p, onClose }) {
+  const panel = useRef(null);
+  useEffect(() => {
+    if (!p) return;
+    const opener = document.activeElement;
+    document.documentElement.style.overflow = 'hidden';          // lock background scroll
+    panel.current?.focus();
+    const onKey = e => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab' || !panel.current) return;              // focus trap
+      const f = [...panel.current.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+      if (!f.length) { e.preventDefault(); return; }
+      const first = f[0], last = f[f.length - 1], cur = document.activeElement;
+      if (e.shiftKey && (cur === first || cur === panel.current)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && cur === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); document.documentElement.style.overflow = ''; opener?.focus?.(); };
+  }, [p]);
   if (!p) return null;
   const ph = <span className="ph-note">Add screenshot</span>;
   return (
-    <div className="modal" onKeyDown={e => e.key === 'Escape' && onClose()}>
+    <div className="modal">
       <div className="modal-bg" onClick={onClose} />
-      <div className={`modal-panel modal-${p.color}`} role="dialog" aria-modal="true" aria-labelledby="mt" tabIndex="-1" ref={el => el?.focus()}>
+      <div className={`modal-panel modal-${p.color}`} role="dialog" aria-modal="true" aria-labelledby="mt" tabIndex="-1" ref={panel}>
         <button className="modal-x" onClick={onClose} aria-label="Close case study">×</button>
         <div className="cs-img">{p.image ? <img src={p.image} alt="" /> : ph}</div>
         <div className="cs-head"><p className="cs-cat">{p.category}</p><h2 id="mt">{p.title}</h2>
@@ -89,9 +113,12 @@ export default function App() {
   const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null), [order, setOrder] = useState([0, 1, 2, 3]);
   const shown = PROJECTS.filter(p => filter === 'all' || p.type === filter);
   const [glow, setGlow] = useState(() => { try { return localStorage.getItem('glow') !== 'off'; } catch { return true; } });
-  const toggleGlow = () => setGlow(g => { const v = !g; document.documentElement.classList.toggle('nolight', !v); try { localStorage.setItem('glow', v ? 'on' : 'off'); } catch {} return v; });
-  document.documentElement.classList.toggle('nolight', !glow);
-  document.documentElement.classList.add('js');
+  useEffect(() => {
+    document.documentElement.classList.toggle('nolight', !glow);
+    document.documentElement.classList.add('js');
+    try { localStorage.setItem('glow', glow ? 'on' : 'off'); } catch {}
+  }, [glow]);
+  const toggleGlow = () => setGlow(g => !g);
   const pick = f => setFilter(f);
 
   return (<>
@@ -115,10 +142,11 @@ export default function App() {
         <h1 data-r><span>I’m Designing</span><span>Interfaces</span><span>with</span><em>Personality.</em></h1>
         <p className="lead" data-r>Hey, I’m elya — a junior web developer with a UI/UX design edge. I love turning ideas into thoughtful, playful digital experiences!</p>
         <div className="hero-row" data-r>
-          <div className="btns"><a href="#projects" className="btn light">Explore my work <Arrow /></a><a href="#contact" className="btn dark">Let’s Talk</a></div>
+          <div className="btns"><a href="#projects" className="btn light">Explore my work <Arrow /></a><a href="#contact" className="btn dark">Let’s Talk</a>{SITE.resume && <a href={SITE.resume} className="btn dark" download>Resume</a>}</div>
           <div className="socials">
-            {[['figma', 'Figma', 20, 30], ['code', 'Code', 33, 25], ['github', 'GitHub', 30, 30], ['linkedin', 'LinkedIn', 30, 30]].map(([f, a, w, h]) =>
-              <a key={f} href="#" onClick={e => e.preventDefault()} aria-label={a}><img src={`/assets/${f}.png`} alt="" width={w} height={h} /></a>)}
+            {[['figma', 'Figma', 20, 30], ['code', 'Code', 33, 25], ['github', 'GitHub', 30, 30], ['linkedin', 'LinkedIn', 30, 30]]
+              .filter(([f]) => SITE.socials[f]).map(([f, al, w, h]) =>
+              <a key={f} href={SITE.socials[f]} target="_blank" rel="noopener noreferrer" aria-label={al}><img src={`/assets/${f}.png`} alt="" width={w} height={h} /></a>)}
           </div>
         </div>
       </section>
@@ -130,11 +158,16 @@ export default function App() {
       </section>
 
       <section className="sec about" id="about">
-        <div className="about-photo" data-r="left"><div className="photo-ph" role="img" aria-label="Photo placeholder"><span>[YOUR PHOTO]</span></div></div>
+        <div className="about-photo" data-r="left">
+          <div className="photo-ph">
+            <img src="/assets/photo.jpg" alt={`Portrait of ${SITE.fullName || SITE.name}`} />
+          </div>
+        </div>
         <div className="about-text" data-r="right">
           <Label dot="pink">ABOUT ME</Label><h2 className="big">A little about me.</h2>
-          <p className="lead">[YOUR BIO — 2 to 3 sentences about who you are, what you study, and what kind of work you want to do.]</p>
+          <p className="lead">I’m a 3rd-year BSIT student specializing in Web Development, with a growing interest in UI/UX design and app design. I enjoy exploring creative ideas, designing user interfaces, and finding ways to make digital experiences both visually appealing and easy to use. Outside of tech, I also enjoy photography, which allows me to express my creativity through a different lens.</p>
           <p className="status-badge"><i aria-hidden="true" />Currently open to: <b>internships / freelance</b></p>
+          {(SITE.location || SITE.graduation) && <p className="about-meta">{[SITE.location, SITE.graduation].filter(Boolean).join(' · ')}</p>}
         </div>
       </section>
 
@@ -168,11 +201,11 @@ export default function App() {
 
       <section className="sec tool" id="toolkit">
         <div className="cert" data-r="left">
-          <div className="blk"><h3 className="blk-h">Education &amp; Certifications</h3>
+          <div className="blk"><h3 className="blk-h">Education</h3>
             <ul className="edu">
               <li><span className="tag">DEGREE</span><h4>BSIT Web Development</h4><p>Holy Angel University · Angeles City</p></li>
-              <li><span className="tag">CERTIFICATION</span><h4>CompTIA IT Fundamentals+</h4><p>Hardware, software, security and IT operations.</p><span className="tag dim">2022 - PRESENT</span></li>
-              <li><span className="tag">COURSE</span><h4>CCNA: Introduction to Networks</h4><p>Network basics, IP addressing, switching, routing, and security.</p></li>
+              <li><span className="tag">UI/UX Design</span><h4>App interfaces and Wireframing</h4><p>Exploring app layouts, screen organization, and user-friendly interface design.</p></li>
+              <li><span className="tag">INTEREST</span><h4>Photography</h4><p>Documenting moments and telling stories through the lens.</p></li>
             </ul></div>
           <hr />
           <div className="blk"><h3 className="blk-h">Skills</h3>
@@ -180,12 +213,12 @@ export default function App() {
               <div className="skill-g" key={h}><h4>{h}</h4><div className="chips">{c.map(x => <span key={x}>{x}</span>)}</div></div>)}</div>
           <a href="#projects" className="btn amber">Explore my work <Arrow /></a>
         </div>
-        <div className="tool-r" data-r="right"><Label dot="indigo">MY TOOLKIT</Label><h2 className="big">Design brain. Developer hands.</h2>
+        <div className="tool-r" data-r="right"><Label dot="indigo">MY TOOLKIT</Label><h2 className="big">Designer Hands.</h2>
           <p className="lead">I care about the whole product — how it looks, how it works, and how it feels to use.</p></div>
       </section>
 
       <section className="sec off">
-        <Label dot="amber" data-r>OFF THE CLOCK</Label><h2 className="big" data-r>Curious by nature.</h2>
+        <Label dot="amber" data-r>OFF THE CLOCK</Label><h2 className="big" data-r>Curious by Nature.</h2>
         <ul className="rows" data-r>
           {DECK.map((c, i) => <li key={c.t} tabIndex="0" className={order[0] === i ? 'on' : ''}
             onClick={() => { setOrder(o => [i, ...o.filter(x => x !== i)]); document.getElementById('space').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
@@ -205,7 +238,7 @@ export default function App() {
         <div className="contact-r" data-r="right"><Label dot="teal">SAY HELLO :)</Label>
           <h2 className="big">Have something <em>interesting</em> in mind?</h2>
           <p className="lead">Tell me the rough idea. I’ll bring the curiosity, good questions, and probably a moodboard.</p>
-          <a className="mail" href="mailto:helooelyauiux@gmail.com">helooelyauiux@gmail.com</a></div>
+          <a className="mail" href={`mailto:${SITE.email}`}>{SITE.email}</a></div>
       </section>
     </main>
 
@@ -213,7 +246,7 @@ export default function App() {
       <img className="flogo" src="/assets/logo-footer.png" alt="elya" width="176" height="151" loading="lazy" />
       <nav className="fnav" aria-label="Footer">{['home', 'about', 'services', 'projects', 'contact'].map(i => <a key={i} href={`#${i}`}>{i.toUpperCase()}</a>)}</nav>
       <p className="ft1">Junior web developer with a UI/UX design edge, based in the Philippines.</p>
-      <p className="ft2">© 2026 Elya creates. All rights reserved.</p>
+      <p className="ft2">© {new Date().getFullYear()} {SITE.fullName || 'Elya creates'}. All rights reserved.</p>
     </footer>
     <a className="cta-float" id="ctaFloat" href="#contact">Let’s talk</a>
     <Modal p={open} onClose={() => setOpen(null)} />

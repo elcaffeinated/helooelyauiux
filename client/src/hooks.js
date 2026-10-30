@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 
-/* Continuous reveal: .in is ADDED when an element enters the viewport and REMOVED when it leaves,
-   so the animation replays scrolling down AND up. MutationObserver catches elements React adds later. */
+/* Reveal ONCE: .in is added when an element first enters the viewport, then it is unobserved,
+   so content never re-hides or replays while scrolling. MutationObserver catches elements React adds later. */
 export function useReveal() {
   useEffect(() => {
     const io = new IntersectionObserver(
-      es => es.forEach(e => e.target.classList.toggle('in', e.isIntersecting)),
+      es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }),
       { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    const scan = () => document.querySelectorAll('[data-r]').forEach(el => io.observe(el));
+    const scan = () => document.querySelectorAll('[data-r]:not(.in)').forEach(el => io.observe(el));
     scan();
     const mo = new MutationObserver(scan);
     mo.observe(document.body, { childList: true, subtree: true });
