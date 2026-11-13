@@ -13,7 +13,7 @@ export default function Nav({ active, scrolled, progress, light, onToggleTheme }
         <div className="h-full origin-left bg-gradient-to-r from-violet via-pink to-amber" style={{ transform: `scaleX(${progress})` }} />
       </div>
       <header
-        className={`fixed left-1/2 z-50 w-[calc(100%-32px)] max-w-[1269px] -translate-x-1/2 transition-[top] duration-500 ${scrolled ? 'top-3' : 'top-6 md:top-10'}`}
+        className={`animate-[navIn_0.9s_ease_backwards] fixed left-1/2 z-50 w-[calc(100%-32px)] max-w-[1269px] -translate-x-1/2 transition-[top] duration-500 ${scrolled ? 'top-3' : 'top-6 md:top-10'}`}
       >
         <div
           className={`flex h-[62px] items-center justify-between rounded-full border border-line px-3 pl-5 shadow-[inset_0_0_4px_#00000040] transition-colors duration-500 ${scrolled ? 'bg-surface/80 backdrop-blur-xl' : 'bg-surface'}`}

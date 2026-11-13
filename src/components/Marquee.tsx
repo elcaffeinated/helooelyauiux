@@ -3,7 +3,7 @@ const words = ['Web Development', 'UI Design', 'UX Research', 'Wireframing', 'Re
 export default function Marquee() {
   const row = [...words, ...words]
   return (
-    <div className="marquee relative mt-10 overflow-hidden border-y border-line py-5" aria-hidden>
+    <div data-r className="marquee relative mt-10 overflow-hidden border-y border-line py-5" aria-hidden>
       <div className="marquee-track flex w-max items-center gap-10 pr-10 font-mono text-sm uppercase tracking-[0.18em] text-muted">
         {row.map((w, i) => (
           <span key={i} className="flex items-center gap-10">

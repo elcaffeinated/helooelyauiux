@@ -185,8 +185,17 @@ html.js [data-r='right'] { transform: translateX(40px); }
 html.js [data-r='scale'] { transform: scale(0.94); }
 html.js [data-r].in { opacity: 1; transform: none; }
 
+/* Children of a revealed block fade up one after another */
+@keyframes kidIn { from { opacity: 0; translate: 0 24px; } }
+@keyframes navIn { from { opacity: 0; } }
+html.js [data-r].in > [data-k] {
+  animation: kidIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--d, 0s) + 0.12s + var(--i, 0) * 0.07s);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  html.js [data-r].in > [data-k] { animation: none; }
   html.js [data-r] { opacity: 1; transform: none; transition: none; }
   .blob, .marquee-track, .aurora, .dot { animation: none; }
   .role { animation: none; }

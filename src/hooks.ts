@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Adds `.in` to every [data-r] element as it scrolls into view. */
+/** Adds `.in` to every [data-r] element as it scrolls into view, and tags its
+ *  children (data-k + --i) so they fade up one after another. */
 export function useReveal() {
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -13,13 +14,39 @@ export function useReveal() {
         }),
       { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
     )
-    const scan = () => document.querySelectorAll('[data-r]:not(.in)').forEach((el) => io.observe(el))
+    const prep = (el: HTMLElement) => {
+      if (el.dataset.rk) return
+      el.dataset.rk = '1'
+      let i = 0
+      Array.from(el.children).forEach((c) => {
+        const k = c as HTMLElement
+        if (k.hasAttribute('data-r') || k.tagName === 'SCRIPT' || k.tagName === 'STYLE') return
+        if (getComputedStyle(k).animationName !== 'none') return // keep elements that already have their own animation
+        k.setAttribute('data-k', '')
+        k.style.setProperty('--i', String(Math.min(i++, 8)))
+      })
+    }
+    const scan = () =>
+      document.querySelectorAll<HTMLElement>('[data-r]:not(.in)').forEach((el) => {
+        prep(el)
+        io.observe(el)
+      })
     scan()
     const mo = new MutationObserver(scan)
     mo.observe(document.body, { childList: true, subtree: true })
+    // at the very bottom of the page, reveal anything still waiting (e.g. the footer's last line)
+    const atBottom = () => {
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4)
+        document.querySelectorAll('[data-r]:not(.in)').forEach((el) => {
+          el.classList.add('in')
+          io.unobserve(el)
+        })
+    }
+    addEventListener('scroll', atBottom, { passive: true })
     return () => {
       io.disconnect()
       mo.disconnect()
+      removeEventListener('scroll', atBottom)
     }
   }, [])
 }
