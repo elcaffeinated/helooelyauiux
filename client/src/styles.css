@@ -3233,3 +3233,19 @@ html.light-mode .pur {
 }
 html.light .modal-panel { scrollbar-color: rgba(75,36,142,.45) transparent; }
 html.light .modal-panel::-webkit-scrollbar-thumb { background: rgba(75,36,142,.4); background-clip: padding-box; }
+/* MODAL SCROLLBAR: matches each popup's color */
+.modal-panel.modal-pink   { scrollbar-color: #ec4899 transparent; }
+.modal-panel.modal-purple { scrollbar-color: #8138ff transparent; }
+.modal-panel.modal-amber  { scrollbar-color: #f59e0b transparent; }
+.modal-panel.modal-teal   { scrollbar-color: #00c8be transparent; }
+.modal-panel.modal-indigo { scrollbar-color: #6366f1 transparent; }
+.modal-panel.modal-pink::-webkit-scrollbar-thumb   { background: #ec4899; background-clip: padding-box; }
+.modal-panel.modal-purple::-webkit-scrollbar-thumb { background: #8138ff; background-clip: padding-box; }
+.modal-panel.modal-amber::-webkit-scrollbar-thumb  { background: #f59e0b; background-clip: padding-box; }
+.modal-panel.modal-teal::-webkit-scrollbar-thumb   { background: #00c8be; background-clip: padding-box; }
+.modal-panel.modal-indigo::-webkit-scrollbar-thumb { background: #6366f1; background-clip: padding-box; }
+html.light .modal-panel.modal-pink   { scrollbar-color: #ec4899 transparent; }
+html.light .modal-panel.modal-purple { scrollbar-color: #8138ff transparent; }
+html.light .modal-panel.modal-amber  { scrollbar-color: #f59e0b transparent; }
+html.light .modal-panel.modal-teal   { scrollbar-color: #00c8be transparent; }
+html.light .modal-panel.modal-indigo { scrollbar-color: #6366f1 transparent; }
