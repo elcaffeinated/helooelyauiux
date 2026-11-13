@@ -3216,3 +3216,20 @@ html.light-mode .rows span {
 html.light-mode .pur {
   color: #6a2fd6;
 }
+
+/* MODAL SCROLLBAR: slim, themed, kept inside the rounded corners */
+.modal-panel {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(173,125,255,.7) transparent;
+}
+.modal-panel::-webkit-scrollbar { width: 10px; }
+.modal-panel::-webkit-scrollbar-track { background: transparent; margin: 28px 0; }
+.modal-panel::-webkit-scrollbar-thumb {
+  background: rgba(173,125,255,.55);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html.light .modal-panel { scrollbar-color: rgba(75,36,142,.45) transparent; }
+html.light .modal-panel::-webkit-scrollbar-thumb { background: rgba(75,36,142,.4); background-clip: padding-box; }
