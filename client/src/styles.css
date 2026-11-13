@@ -329,15 +329,6 @@ body::before {
   transform: rotate(90deg);
 }
 
-.nav-btn[aria-pressed=false] {
-  background: #2b2b2b;
-  box-shadow: none;
-}
-
-.nav-btn[aria-pressed=false] img {
-  opacity: .55;
-}
-
 /* hero */
 
 .hero {
@@ -2012,17 +2003,6 @@ body.modal-open {
 .pos3 { transform: translate(9%, -9%) rotate(20deg) scale(0.88); z-index: 7; }
 
 /* =====================================================================
-   GLOW OFF: the "Glow" button adds .nolight to <html>
-   ===================================================================== */
-html.nolight * {
-  box-shadow: none !important;
-  text-shadow: none !important;
-}
-html.nolight .space::before {
-  opacity: 0;
-}
-
-/* =====================================================================
    BREAKPOINTS FOR THE HERO  (largest to smallest)
    ===================================================================== */
 @media (max-width: 1200px) {
@@ -2709,4 +2689,530 @@ html.nolight .space::before {
   letter-spacing: 0.04em;
   margin: 14px 0 0;
   opacity: 0.8;
+}
+
+/* =====================================================================
+   LIGHT MODE
+   Dark mode (neon glow + animation) is the default and is styled by everything above.
+   The "Light mode" button in the nav adds .light-mode to <html>, and the rules below
+   override only what needs to change.
+
+   Same hues as dark mode (purple, pink, teal, amber, indigo), on a soft white page,
+   with clean soft shadows instead of neon glows.
+   Palette:  page #f8f6fc   text #17141f   soft text #4f4b5c   muted #5d586b
+             panel #f0eafc  white #ffffff  hairline rgba(23,20,31,.14)
+
+   NOTE: the class is .light-mode (not .light) because .light is already the
+   white button style.
+   ===================================================================== */
+
+/* ---------- page ---------- */
+html.light-mode body {
+  background: #f8f6fc;
+  color: #17141f;
+}
+
+/* solid strip above the nav pill: same colour as the page */
+html.light-mode body::before {
+  background: #f8f6fc;
+}
+
+html.light-mode :focus-visible {
+  outline-color: #6a2fd6;
+}
+
+/* no neon text glow in light mode */
+html.light-mode * {
+  text-shadow: none !important;
+}
+
+/* ---------- ambient animation belongs to dark mode ----------
+   (pulsing glow dots + floating hero blob). Scroll reveals, hovers and the
+   parallax still work in light mode. Delete these two rules to keep them. */
+html.light-mode .label i,
+html.light-mode .mono i,
+html.light-mode .status-badge i {
+  animation: none;
+  box-shadow: none;
+}
+html.light-mode .blob {
+  animation: none;
+}
+
+/* ---------- type colours ---------- */
+html.light-mode .label,
+html.light-mode .mono {
+  color: #4a4655;
+}
+
+/* the banner sits on a dark photo, so its small label stays light */
+html.light-mode .banner .mono {
+  color: #d9d9d9;
+}
+
+html.light-mode .big,
+html.light-mode .about .big,
+html.light-mode .tool-r .big,
+html.light-mode .space .big,
+html.light-mode .off .big,
+html.light-mode .contact-r .big {
+  color: #17141f;
+}
+
+html.light-mode .lead {
+  color: #4f4b5c;
+}
+
+/* ---------- buttons (the two white/dark pills swap roles) ---------- */
+html.light-mode .btn.light {
+  background: #17141f;
+  color: #fff;
+  border: 1px solid #17141f;
+  box-shadow: 0 6px 18px rgba(23,20,31,.2);
+}
+html.light-mode .btn.light:hover {
+  box-shadow: 0 12px 28px rgba(23,20,31,.32);
+}
+
+html.light-mode .btn.dark {
+  background: #fff;
+  color: #17141f;
+  border: 1px solid rgba(23,20,31,.22);
+  box-shadow: 0 2px 8px rgba(23,20,31,.06);
+}
+html.light-mode .btn.dark:hover {
+  box-shadow: 0 10px 24px rgba(23,20,31,.16);
+}
+
+html.light-mode .btn.amber {
+  box-shadow: 0 6px 16px rgba(233,146,0,.3);
+}
+html.light-mode .btn.amber:hover {
+  box-shadow: 0 12px 28px rgba(233,146,0,.45);
+}
+
+/* ---------- nav ---------- */
+html.light-mode .nav {
+  background: #fff;
+  border-color: rgba(23,20,31,.1);
+  box-shadow: 0 8px 28px rgba(72,3,191,.1), 0 1px 2px rgba(23,20,31,.06);
+}
+html.light-mode .nav.sm {
+  background: rgba(255,255,255,.86);
+}
+
+html.light-mode .nav nav {
+  color: #4f4b5c;
+}
+html.light-mode .nav nav a::after {
+  background: #8138ff;
+}
+html.light-mode .nav nav a:hover,
+html.light-mode .nav nav a.on {
+  color: #17141f;
+}
+
+/* the Light mode button: amber (from the palette) when light mode is on */
+html.light-mode .nav-btn {
+  background: #ffa204;
+  color: #1f1f1f;
+  border: 1px solid rgba(233,146,0,.7);
+  box-shadow: 0 4px 14px rgba(233,146,0,.35);
+}
+html.light-mode .nav-btn img {
+  filter: invert(1);
+}
+
+/* ---------- hero ---------- */
+html.light-mode .hero .label {
+  color: #4a4655;
+}
+
+/* social icons are white PNGs, so flip them to dark */
+html.light-mode .socials img {
+  filter: invert(1);
+}
+html.light-mode .socials a:hover img {
+  filter: invert(1) drop-shadow(0 4px 6px rgba(23,20,31,.3));
+}
+
+/* ---------- banner (dark photo stays dark, glow becomes a soft shadow) ----------
+   The photo has transparent pixels. In dark mode they blend into the black page, so in
+   light mode the banner needs its own black backing or the photo looks washed out. */
+html.light-mode .banner {
+  background: #000;
+  border: 1px solid rgba(129,56,255,.45);
+  box-shadow: 0 18px 44px rgba(72,3,191,.22), inset 0 0 40px rgba(0,0,0,.5);
+}
+
+/* ---------- services ---------- */
+html.light-mode .svc b {
+  color: #6b6679;
+}
+
+html.light-mode .svc-teal {
+  background: #e3f7f5;
+  box-shadow: 0 8px 24px rgba(0,167,158,.16);
+}
+html.light-mode .svc-teal:hover {
+  box-shadow: 0 16px 38px rgba(0,167,158,.3);
+}
+html.light-mode .svc-teal .ic,
+html.light-mode .svc-teal .go {
+  background: #00a79e;
+  border: 0;
+  box-shadow: none;
+}
+
+html.light-mode .svc-purple {
+  background: #efe8fc;
+  box-shadow: 0 8px 24px rgba(72,3,191,.16);
+}
+html.light-mode .svc-purple:hover {
+  box-shadow: 0 16px 38px rgba(72,3,191,.3);
+}
+html.light-mode .svc-purple .ic,
+html.light-mode .svc-purple .go {
+  background: #4803bf;
+  border: 0;
+  box-shadow: none;
+}
+
+html.light-mode .svc-pink {
+  background: #fde8f2;
+  box-shadow: 0 8px 24px rgba(218,0,105,.16);
+}
+html.light-mode .svc-pink:hover {
+  box-shadow: 0 16px 38px rgba(218,0,105,.3);
+}
+html.light-mode .svc-pink .ic,
+html.light-mode .svc-pink .go {
+  background: #da0069;
+  border: 0;
+  box-shadow: none;
+}
+
+html.light-mode .svc-amber {
+  background: #fff1d6;
+  box-shadow: 0 8px 24px rgba(233,146,0,.18);
+}
+html.light-mode .svc-amber:hover {
+  box-shadow: 0 16px 38px rgba(233,146,0,.34);
+}
+html.light-mode .svc-amber .ic,
+html.light-mode .svc-amber .go {
+  background: #e99200;
+  border: 0;
+  box-shadow: none;
+}
+
+/* ---------- about ---------- */
+html.light-mode .photo-ph {
+  background: linear-gradient(160deg,#e9defc,#fbf8ff);
+  box-shadow: 0 14px 36px rgba(72,3,191,.22);
+}
+
+html.light-mode .status-badge {
+  background: rgba(0,167,158,.1);
+  border-color: rgba(0,140,132,.55);
+  color: #17141f;
+}
+html.light-mode .status-badge b {
+  color: #007a73;
+}
+
+/* ---------- projects ---------- */
+html.light-mode .chip-f {
+  color: #4a4655;
+  border-color: rgba(23,20,31,.28);
+}
+html.light-mode .chip-f:hover {
+  color: #17141f;
+  border-color: #17141f;
+}
+html.light-mode .chip-f[aria-pressed=true] {
+  color: #fff;
+  background: #17141f;
+  border-color: #17141f;
+  box-shadow: 0 6px 16px rgba(23,20,31,.25);
+}
+
+html.light-mode .bento-empty {
+  color: #5d586b;
+}
+
+html.light-mode .proj {
+  background: #fff;
+}
+html.light-mode .proj-btn {
+  color: #17141f;
+}
+html.light-mode .proj .cat {
+  color: #5d586b;
+}
+html.light-mode .proj .tags span {
+  color: #3d394a;
+  border-color: rgba(23,20,31,.25);
+}
+html.light-mode .proj svg {
+  color: #17141f;
+}
+html.light-mode .proj-btn:focus-visible::after {
+  outline-color: #6a2fd6;
+}
+
+html.light-mode .proj-pink {
+  background: #fde9f3;
+  border-color: rgba(236,72,153,.6);
+  box-shadow: 0 8px 22px rgba(218,0,105,.14);
+}
+html.light-mode .proj-pink:hover,
+html.light-mode .proj-pink:focus-within {
+  border-color: #ec4899;
+  box-shadow: 0 18px 40px rgba(218,0,105,.28);
+}
+
+html.light-mode .proj-purple {
+  background: #f0eafd;
+  border-color: rgba(129,56,255,.6);
+  box-shadow: 0 8px 22px rgba(72,3,191,.14);
+}
+html.light-mode .proj-purple:hover,
+html.light-mode .proj-purple:focus-within {
+  border-color: #8138ff;
+  box-shadow: 0 18px 40px rgba(72,3,191,.28);
+}
+
+html.light-mode .proj-amber {
+  background: #fff3da;
+  border-color: rgba(245,158,11,.65);
+  box-shadow: 0 8px 22px rgba(233,146,0,.16);
+}
+html.light-mode .proj-amber:hover,
+html.light-mode .proj-amber:focus-within {
+  border-color: #f59e0b;
+  box-shadow: 0 18px 40px rgba(233,146,0,.32);
+}
+
+html.light-mode .proj-teal {
+  background: #e3f7f5;
+  border-color: rgba(0,200,190,.65);
+  box-shadow: 0 8px 22px rgba(0,167,158,.14);
+}
+html.light-mode .proj-teal:hover,
+html.light-mode .proj-teal:focus-within {
+  border-color: #00c8be;
+  box-shadow: 0 18px 40px rgba(0,167,158,.28);
+}
+
+html.light-mode .proj-indigo {
+  background: #ecedfd;
+  border-color: rgba(99,102,241,.6);
+  box-shadow: 0 8px 22px rgba(65,70,214,.14);
+}
+html.light-mode .proj-indigo:hover,
+html.light-mode .proj-indigo:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 18px 40px rgba(65,70,214,.28);
+}
+
+/* ---------- case-study popup ---------- */
+html.light-mode .modal-bg {
+  background: rgba(23,20,31,.55);
+}
+html.light-mode .modal-panel {
+  background: #fff;
+}
+html.light-mode .modal-x {
+  background: #fff;
+  color: #17141f;
+  border: 1px solid rgba(23,20,31,.25);
+  box-shadow: 0 4px 12px rgba(23,20,31,.2);
+}
+html.light-mode .modal-x:hover {
+  background: #17141f;
+  color: #fff;
+}
+html.light-mode .cs-cat {
+  color: #5d586b;
+}
+html.light-mode .cs-head h2 {
+  color: #17141f;
+}
+html.light-mode .cs-head .tags span {
+  color: #3d394a;
+  border-color: rgba(23,20,31,.28);
+}
+html.light-mode .cs-sec h3 {
+  color: #d6246e;
+}
+html.light-mode .cs-sec p,
+html.light-mode .cs-sec li {
+  color: #3d394a;
+}
+html.light-mode .cs-sec ul.tl li {
+  border-color: rgba(23,20,31,.28);
+}
+
+html.light-mode .modal-pink {
+  box-shadow: 0 24px 60px rgba(218,0,105,.3);
+}
+html.light-mode .modal-purple {
+  box-shadow: 0 24px 60px rgba(72,3,191,.3);
+}
+html.light-mode .modal-amber {
+  box-shadow: 0 24px 60px rgba(233,146,0,.34);
+}
+html.light-mode .modal-teal {
+  box-shadow: 0 24px 60px rgba(0,167,158,.3);
+}
+html.light-mode .modal-indigo {
+  box-shadow: 0 24px 60px rgba(65,70,214,.3);
+}
+
+/* ---------- toolkit ---------- */
+html.light-mode .cert {
+  background: #f0eafc;
+  border: 1px solid rgba(129,56,255,.28);
+  box-shadow: 0 14px 40px rgba(72,3,191,.12);
+}
+html.light-mode .tag {
+  color: #6a2fd6;
+}
+html.light-mode .tag.dim {
+  color: #5d586b;
+}
+html.light-mode .blk-h,
+html.light-mode .skill-g h4 {
+  color: #4a4655;
+}
+html.light-mode .edu li {
+  border-top-color: rgba(23,20,31,.14);
+}
+html.light-mode .edu p {
+  color: #5d586b;
+}
+html.light-mode .chips span {
+  color: #3d394a;
+  border-color: rgba(23,20,31,.28);
+}
+html.light-mode .chips span:hover {
+  color: #17141f;
+  border-color: #8138ff;
+  box-shadow: 0 6px 16px rgba(129,56,255,.25);
+}
+html.light-mode .cert .blk:last-child {
+  border-top-color: rgba(23,20,31,.14);
+}
+
+/* ---------- contact ---------- */
+html.light-mode .form {
+  background: #fff;
+  border: 1px solid rgba(129,56,255,.35);
+  box-shadow: 0 18px 46px rgba(72,3,191,.14);
+}
+html.light-mode .form label {
+  color: #4a4655;
+}
+html.light-mode .form input,
+html.light-mode .form textarea {
+  background: #f8f6fc;
+  border: 1px solid rgba(23,20,31,.2);
+  color: #17141f;
+  box-shadow: none;
+}
+html.light-mode .form input::placeholder,
+html.light-mode .form textarea::placeholder {
+  color: #6f6a7e;
+}
+/* focus: a soft ring instead of the neon glow */
+html.light-mode .form input:focus,
+html.light-mode .form textarea:focus {
+  border-color: #8138ff;
+  box-shadow: 0 0 0 3px rgba(129,56,255,.2);
+}
+
+html.light-mode .send {
+  background: #17141f;
+  color: #fff;
+  border: 1px solid #17141f;
+  box-shadow: 0 8px 20px rgba(23,20,31,.22);
+}
+html.light-mode .send:hover {
+  box-shadow: 0 12px 28px rgba(23,20,31,.32);
+}
+
+html.light-mode .status {
+  color: #4a4655;
+}
+html.light-mode .status.ok {
+  color: #00756f;
+}
+html.light-mode .status.err {
+  color: #c2185b;
+}
+
+html.light-mode .mail {
+  color: #4f4b5c;
+}
+html.light-mode .mail:hover {
+  color: #17141f;
+}
+
+/* ---------- footer ---------- */
+html.light-mode .foot {
+  border-top-color: rgba(23,20,31,.14);
+}
+html.light-mode .fnav {
+  background: #fff;
+  border-color: rgba(23,20,31,.1);
+  box-shadow: 0 6px 20px rgba(72,3,191,.08);
+  color: #4f4b5c;
+}
+html.light-mode .fnav a:hover {
+  color: #17141f;
+}
+html.light-mode .ft1,
+html.light-mode .ft2 {
+  color: #5d586b;
+}
+
+/* ---------- floating "Let's talk" button (phones) ---------- */
+html.light-mode .cta-float {
+  background: #17141f;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(23,20,31,.3);
+}
+
+/* ---------- sections that are in this stylesheet but not on the page right now
+   (card deck, rows). Kept so they look right if you add them back. ---------- */
+html.light-mode .space {
+  border-top-color: rgba(23,20,31,.14);
+}
+html.light-mode .space::before {
+  opacity: .1;
+}
+html.light-mode .deck-meta {
+  color: #4a4655;
+}
+html.light-mode .deck-count {
+  color: #17141f;
+  border-color: rgba(129,56,255,.5);
+  box-shadow: none;
+}
+html.light-mode .dc {
+  box-shadow: 0 14px 36px rgba(72,3,191,.25);
+}
+html.light-mode .dc.top:hover {
+  box-shadow: 0 20px 48px rgba(72,3,191,.4);
+}
+html.light-mode .rows,
+html.light-mode .rows li {
+  border-color: rgba(23,20,31,.14);
+}
+html.light-mode .rows span {
+  color: #17141f;
+}
+html.light-mode .pur {
+  color: #6a2fd6;
 }

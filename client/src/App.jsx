@@ -93,13 +93,16 @@ export default function App() {
   const active = useScroll(NAV.map(n => n[0]));
   const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null);
   const shown = PROJECTS.filter(p => filter === 'all' || p.type === filter);
-  const [glow, setGlow] = useState(() => { try { return localStorage.getItem('glow') !== 'off'; } catch { return true; } });
+  /* Theme: dark (neon glow + animation) is the default. `light` = true adds .light-mode to <html>,
+     which switches on the light styles at the end of styles.css. The choice is remembered in localStorage. */
+  const [light, setLight] = useState(() => { try { return localStorage.getItem('theme') === 'light'; } catch { return false; } });
   useEffect(() => {
-    document.documentElement.classList.toggle('nolight', !glow);
+    document.documentElement.classList.toggle('light-mode', light);
     document.documentElement.classList.add('js');
-    try { localStorage.setItem('glow', glow ? 'on' : 'off'); } catch {}
-  }, [glow]);
-  const toggleGlow = () => setGlow(g => !g);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f8f6fc' : '#000000');
+    try { localStorage.setItem('theme', light ? 'light' : 'dark'); } catch {}
+  }, [light]);
+  const toggleTheme = () => setLight(l => !l);
   const pick = f => setFilter(f);
 
   return (<>
@@ -107,12 +110,12 @@ export default function App() {
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true"><symbol id="arr" viewBox="0 0 38 28"><path d="M0 14h35M23 2l12 12-12 12" fill="none" stroke="currentColor" strokeWidth="2.5" /></symbol></svg>
 
     <header className="nav" id="nav">
-      <a href="#home" className="nav-logo"><img src="/assets/logo-nav.png" alt="elya — back to top" width="121" height="97" /></a>
+      <a href="#home" className="nav-logo"><img src={light ? '/assets/logo-nav-light.png' : '/assets/logo-nav.png'} alt="elya — back to top" width="121" height="97" /></a>
       <nav aria-label="Primary">
         {NAV.map(([id, t, c]) => <a key={id} href={`#${id}`} className={`${c || ''} ${active === id ? 'on' : ''}${id === 'home' ? ' opt-sm' : ''}`} aria-current={active === id ? 'true' : undefined}>{t}</a>)}
       </nav>
-      <button className="nav-btn" type="button" aria-pressed={glow} onClick={toggleGlow} aria-label={`Glow: ${glow ? 'on' : 'off'}. Toggle the neon glow`}>
-        <img src="/assets/sun.png" alt="" width="27" height="26" /><span id="lightsLabel">Glow: {glow ? 'on' : 'off'}</span></button>
+      <button className="nav-btn" type="button" aria-pressed={light} onClick={toggleTheme} aria-label={`Light mode: ${light ? 'on' : 'off'}. Switch to ${light ? 'dark' : 'light'} mode`}>
+        <img src="/assets/sun.png" alt="" width="27" height="26" /><span id="lightsLabel">Light mode: {light ? 'on' : 'off'}</span></button>
     </header>
 
     <main id="main">
@@ -208,7 +211,7 @@ export default function App() {
     </main>
 
     <footer className="foot">
-      <img className="flogo" src="/assets/logo-footer.png" alt="elya" width="176" height="151" loading="lazy" />
+      <img className="flogo" src={light ? '/assets/logo-footer-light.png' : '/assets/logo-footer.png'} alt="elya" width="176" height="151" loading="lazy" />
       <nav className="fnav" aria-label="Footer">{['home', 'about', 'services', 'projects', 'contact'].map(i => <a key={i} href={`#${i}`}>{i.toUpperCase()}</a>)}</nav>
       <p className="ft1">Junior web developer with a UI/UX design edge, based in the Philippines.</p>
       <p className="ft2">© {new Date().getFullYear()} {SITE.fullName || 'Elya creates'}. All rights reserved.</p>
