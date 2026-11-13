@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useReveal, useScroll } from './hooks.js';
-import { PROJECTS, DECK, SERVICES } from './data/projects.js';
+import { PROJECTS, SERVICES } from './data/projects.js';
 import { SITE } from './data/site.js';
 
 const Arrow = () => <svg aria-hidden="true"><use href="#arr" /></svg>;
 const Label = ({ dot, children, ...r }) => <p className={`label dot-${dot}`} {...r}><i />{children}</p>;
-const NAV = [['home','HOME'],['about','ABOUT'],['services','SERVICES','opt'],['projects','PROJECTS'],['space','SPACE','opt'],['contact','CONTACT']];
+const NAV = [['home','HOME'],['about','ABOUT'],['services','SERVICES','opt'],['projects','PROJECTS'],['contact','CONTACT']];
 
 /* ---------- Contact form ----------
    Works with a form service (set VITE_FORM_ENDPOINT, e.g. a Formspree URL) so it also works on static hosting.
@@ -88,29 +88,10 @@ function Modal({ p, onClose }) {
   );
 }
 
-/* ---------- Click-the-cards deck ---------- */
-function Deck({ order, setOrder }) {
-  const [out, setOut] = useState(''), n = useRef(0);
-  const next = () => {
-    if (out) return;
-    setOut(n.current++ % 2 ? 'out-r' : 'out-l');
-    setTimeout(() => { setOrder(o => [...o.slice(1), o[0]]); setOut(''); }, 520);
-  };
-  return (
-    <div className="deck" tabIndex="0" role="button" onClick={next}
-      onKeyDown={e => ['Enter', ' ', 'ArrowRight'].includes(e.key) && (e.preventDefault(), next())}
-      aria-label={`Card deck: ${DECK[order[0]].t}. Press Enter for the next card.`}>
-      {DECK.map((c, i) => { const p = order.indexOf(i);
-        return <div key={c.t} className={`dc pos${p}${p === 0 ? ` top ${out}` : ''}`} aria-hidden={p !== 0}>
-          <img src={c.img} alt={c.t} loading="lazy" /><span>{c.t}</span></div>; })}
-    </div>
-  );
-}
-
 export default function App() {
   useReveal();
   const active = useScroll(NAV.map(n => n[0]));
-  const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null), [order, setOrder] = useState([0, 1, 2, 3]);
+  const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null);
   const shown = PROJECTS.filter(p => filter === 'all' || p.type === filter);
   const [glow, setGlow] = useState(() => { try { return localStorage.getItem('glow') !== 'off'; } catch { return true; } });
   useEffect(() => {
@@ -200,7 +181,9 @@ export default function App() {
       </section>
 
       <section className="sec tool" id="toolkit">
-        <div className="cert" data-r="left">
+        <div className="tool-r" data-r="left"><Label dot="indigo">MY TOOLKIT</Label><h2 className="big">Designer Hands.</h2>
+          <p className="lead">I care about the whole product — how it looks, how it works, and how it feels to use.</p></div>
+        <div className="cert" data-r="right">
           <div className="blk"><h3 className="blk-h">Education</h3>
             <ul className="edu">
               <li><span className="tag">DEGREE</span><h4>BSIT Web Development</h4><p>Holy Angel University · Angeles City</p></li>
@@ -213,24 +196,6 @@ export default function App() {
               <div className="skill-g" key={h}><h4>{h}</h4><div className="chips">{c.map(x => <span key={x}>{x}</span>)}</div></div>)}</div>
           <a href="#projects" className="btn amber">Explore my work <Arrow /></a>
         </div>
-        <div className="tool-r" data-r="right"><Label dot="indigo">MY TOOLKIT</Label><h2 className="big">Designer Hands.</h2>
-          <p className="lead">I care about the whole product — how it looks, how it works, and how it feels to use.</p></div>
-      </section>
-
-      <section className="sec off">
-        <Label dot="amber" data-r>OFF THE CLOCK</Label><h2 className="big" data-r>Curious by Nature.</h2>
-        <ul className="rows" data-r>
-          {DECK.map((c, i) => <li key={c.t} tabIndex="0" className={order[0] === i ? 'on' : ''}
-            onClick={() => { setOrder(o => [i, ...o.filter(x => x !== i)]); document.getElementById('space').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
-            onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), e.currentTarget.click())}><b>0{i + 1}</b><span>{c.t}</span></li>)}
-        </ul>
-      </section>
-
-      <section className="space" id="space">
-        <div className="space-t"><p className="mono pur" data-r>CLICK THE CARDS</p><h2 className="big" data-r>A little space for everything.</h2>
-          <p className="lead" data-r>Click the folders to peek inside my practice, process and playful experiments.</p></div>
-        <div className="deck-wrap" data-r="scale"><Deck order={order} setOrder={setOrder} />
-          <p className="deck-meta"><span className="deck-count" aria-live="polite">{order[0] + 1} / {DECK.length}</span><span>Click the card for the next one</span></p></div>
       </section>
 
       <section className="sec contact" id="contact">
