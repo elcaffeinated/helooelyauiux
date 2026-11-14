@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Adds `.in` to every [data-r] element as it scrolls into view, and tags its
- *  children (data-k + --i) so they fade up one after another. */
+/** Toggles `.in` on every [data-r] element as it enters and leaves the viewport, so blocks
+ *  animate in on the way down AND on the way back up. Children are tagged (data-k + --i)
+ *  so they fade up one after another each time. */
 export function useReveal() {
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in')
-            io.unobserve(e.target)
+          const el = e.target as HTMLElement
+          const tall = e.boundingClientRect.height > innerHeight * 0.8
+          if (e.isIntersecting && (e.intersectionRatio >= 0.12 || tall)) {
+            el.classList.add('in')
+          } else if (!e.isIntersecting) {
+            el.classList.remove('in')
+            // remember which side it left from, so it re-enters from that side
+            el.dataset.from = e.boundingClientRect.top < 0 ? 'top' : 'bottom'
           }
         }),
-      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
+      { threshold: [0, 0.12], rootMargin: '0px 0px -3% 0px' },
     )
     const prep = (el: HTMLElement) => {
       if (el.dataset.rk) return
@@ -27,19 +33,21 @@ export function useReveal() {
       })
     }
     const scan = () =>
-      document.querySelectorAll<HTMLElement>('[data-r]:not(.in)').forEach((el) => {
+      document.querySelectorAll<HTMLElement>('[data-r]').forEach((el) => {
+        if (el.dataset.ro) return
+        el.dataset.ro = '1'
         prep(el)
         io.observe(el)
       })
     scan()
     const mo = new MutationObserver(scan)
     mo.observe(document.body, { childList: true, subtree: true })
-    // at the very bottom of the page, reveal anything still waiting (e.g. the footer's last line)
+    // at the very bottom of the page, make sure anything on screen is revealed (e.g. the footer's last line)
     const atBottom = () => {
       if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4)
         document.querySelectorAll('[data-r]:not(.in)').forEach((el) => {
-          el.classList.add('in')
-          io.unobserve(el)
+          const r = el.getBoundingClientRect()
+          if (r.top < innerHeight && r.bottom > 0) el.classList.add('in')
         })
     }
     addEventListener('scroll', atBottom, { passive: true })
