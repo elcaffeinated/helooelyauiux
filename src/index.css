@@ -203,3 +203,17 @@ html.js [data-r].in > [data-k] {
 
 .title-glow { text-shadow: 0 0 10px rgba(255, 255, 255, 0.12); }
 html.light .title-glow { text-shadow: none; }
+/* Project popup scrollbar: slim and tinted with the card's own color (--c) */
+[role='dialog'] {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c, #ad7dff) transparent;
+}
+[role='dialog']::-webkit-scrollbar { width: 10px; }
+[role='dialog']::-webkit-scrollbar-track { background: transparent; margin: 28px 0; }
+[role='dialog']::-webkit-scrollbar-thumb {
+  background: var(--c, #ad7dff);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
